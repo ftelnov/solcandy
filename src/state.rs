@@ -4,9 +4,13 @@ use solana_program::pubkey::Pubkey;
 use std::str::FromStr;
 
 /// Version of candy machine, since metaplex introduced new one.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialOrd, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum CandyVersion {
+    #[cfg_attr(feature = "serde", serde(alias = "v1"), serde(alias = "1"))]
     V1,
+
+    #[cfg_attr(feature = "serde", serde(alias = "v2"), serde(alias = "2"))]
     V2,
 }
 
@@ -15,13 +19,15 @@ impl FromStr for CandyVersion {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "1" | "v1" => Ok(CandyVersion::V1),
-            "2" | "v2" => Ok(CandyVersion::V2),
+            "1" | "v1" | "V1" => Ok(CandyVersion::V1),
+            "2" | "v2" | "V2" => Ok(CandyVersion::V2),
             _ => Err(SolcandyError::InvalidCandyVersion),
         }
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialOrd, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CandyMachine {
     key: Pubkey,
     version: CandyVersion,
@@ -51,5 +57,19 @@ impl CandyMachine {
                 .0
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn it_deserializes_candy_version() {
+        let value = json!("1");
+        let version: CandyVersion = serde_json::from_value(value).unwrap();
+        assert_eq!(version, CandyVersion::V1)
     }
 }
