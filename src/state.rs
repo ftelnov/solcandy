@@ -60,6 +60,47 @@ impl CandyMachine {
     }
 }
 
+#[cfg(any(feature = "dev", test))]
+pub mod dev {
+    use super::*;
+    use solana_program::pubkey::Pubkey;
+
+    fn unpack_key(raw: &str) -> Pubkey {
+        Pubkey::from_str(raw).unwrap()
+    }
+
+    #[derive(Debug, Clone, PartialEq, PartialOrd)]
+    pub struct CandySample {
+        /// Sample candy machine.
+        pub candy: CandyMachine,
+
+        /// Amount of tokens that are already presented on the candy machine.
+        ///
+        /// Suitable for assertion.
+        pub token_amount: usize,
+    }
+
+    impl CandySample {
+        /// Provides devnet samples for each versions.
+        pub fn new_devnet(version: CandyVersion) -> Self {
+            let (key, amount) = match version {
+                CandyVersion::V1 => (
+                    unpack_key("4xGR6jwwAhBebU9ugdq7pkzsz7Q1P3Djg72Fby1xmUkA"),
+                    14,
+                ),
+                CandyVersion::V2 => (
+                    unpack_key("C24whbLeUARPsuiJAkZ41dxrmRKBhqzQqQ6hfLMRY1mD"),
+                    14,
+                ),
+            };
+            Self {
+                candy: CandyMachine::new(&key, version),
+                token_amount: amount,
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

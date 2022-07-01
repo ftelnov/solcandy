@@ -69,12 +69,11 @@ impl CandyFetch for CandyMachine {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::state::dev::CandySample;
     use crate::state::CandyVersion;
-    use std::str::FromStr;
 
     struct TestContext {
-        candy_machine: CandyMachine,
-        mints_amount: usize,
+        sample: CandySample,
         client: RpcClient,
     }
 
@@ -82,25 +81,10 @@ mod tests {
         RpcClient::new("https://api.devnet.solana.com".to_string())
     }
 
-    fn unpack_key(raw: &str) -> Pubkey {
-        Pubkey::from_str(raw).unwrap()
-    }
-
     impl TestContext {
         fn new_devnet(version: CandyVersion) -> Self {
-            let (key, amount) = match version {
-                CandyVersion::V1 => (
-                    unpack_key("4xGR6jwwAhBebU9ugdq7pkzsz7Q1P3Djg72Fby1xmUkA"),
-                    14,
-                ),
-                CandyVersion::V2 => (
-                    unpack_key("C24whbLeUARPsuiJAkZ41dxrmRKBhqzQqQ6hfLMRY1mD"),
-                    14,
-                ),
-            };
             Self {
-                candy_machine: CandyMachine::new(&key, version),
-                mints_amount: amount,
+                sample: CandySample::new_devnet(version),
                 client: get_devnet_client(),
             }
         }
@@ -109,14 +93,14 @@ mod tests {
     #[tokio::test]
     async fn test_v1_devnet() {
         let ctx = TestContext::new_devnet(CandyVersion::V1);
-        let tokens = ctx.candy_machine.list_keys(&ctx.client).await.unwrap();
-        assert_eq!(tokens.len(), ctx.mints_amount)
+        let tokens = ctx.sample.candy.list_keys(&ctx.client).await.unwrap();
+        assert_eq!(tokens.len(), ctx.sample.token_amount)
     }
 
     #[tokio::test]
     async fn test_v2_devnet() {
         let ctx = TestContext::new_devnet(CandyVersion::V2);
-        let tokens = ctx.candy_machine.list_keys(&ctx.client).await.unwrap();
-        assert_eq!(tokens.len(), ctx.mints_amount)
+        let tokens = ctx.sample.candy.list_keys(&ctx.client).await.unwrap();
+        assert_eq!(tokens.len(), ctx.sample.token_amount)
     }
 }

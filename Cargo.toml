@@ -1,6 +1,6 @@
 [package]
 name = "solcandy"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Useful utils for working with Metaplex candy machines(Solana blockchain)."
 license = "GPL-3.0"
@@ -13,6 +13,8 @@ keywords = ["solana", "metaplex", "blockchain"]
 [features]
 # If enabled, include serde implementation for candy state.
 serde = ["dep:serde"]
+# If enabled, include dev utils, like samples for candy state.
+dev = []
 
 [dependencies]
 thiserror = "1.0"
